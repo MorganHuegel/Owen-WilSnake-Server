@@ -5,8 +5,8 @@ DROP DATABASE IF EXISTS snake;
 
 CREATE DATABASE snake;
 
-DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS games;
+DROP TABLE IF EXISTS users;
 
 CREATE TABLE users(
   id serial PRIMARY KEY,
@@ -15,7 +15,7 @@ CREATE TABLE users(
   password_hash VARCHAR NOT NULL,
   email VARCHAR UNIQUE,
   created_ts TIMESTAMPTZ default NOW(),
-  last_updated_ts TIMESTAMPTZ
+  last_updated_ts TIMESTAMPTZ default NOW()
 );
 
 CREATE TABLE games(
@@ -28,8 +28,8 @@ CREATE TABLE games(
 
 INSERT INTO users (phone_id, username, password_hash, email, created_ts, last_updated_ts)
 VALUES 
-  ('iphone1234', 'bobuser', 'INSERT HASH HERE', 'bob@user.com', '2019-06-18 04:10:25-07', '2019-07-18 09:10:25-07'),
-  ('android4321', 'billuser', 'INSERT HASH HERE', 'bill@user.com', '2019-06-11 04:10:25-07', '2019-07-18 09:10:25-07');
+  ('iphone1234', 'bobuser', '$2a$08$lOz6rbxEPlWYQLmSt6Seh.GeXDNgWMqCBh8AddsQniLrfmAeSJLYS', 'bob@user.com', '2019-06-18 04:10:25-07', '2019-07-18 09:10:25-07'),
+  ('android4321', 'billuser', '$2a$08$lOz6rbxEPlWYQLmSt6Seh.GeXDNgWMqCBh8AddsQniLrfmAeSJLYS', 'bill@user.com', '2019-06-11 04:10:25-07', '2019-07-18 09:10:25-07');
 
 INSERT INTO games (score, num_of_touches, played_on_ts, user_id)
 VALUES 
