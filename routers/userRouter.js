@@ -2,6 +2,7 @@ const express = require('express')
 const userRouter = express.Router()
 const { knex } = require('../database/connectToDb')
 const { hashPassword, validatePassword } = require('../authentication/bcrypt')
+const { createToken, validateTokenMiddleware } = require('../authentication/jwt')
 
 /* DELETE THIS BEFORE PRODUCTION !!!!!!!!!!!!!!!! */
 userRouter.get('/', async (req, res, next) => {
@@ -9,6 +10,8 @@ userRouter.get('/', async (req, res, next) => {
   return res.status(418).json({ allUsers })
 })
 /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+
+
 
 
 // Register new user
@@ -31,9 +34,9 @@ userRouter.post('/register', async (req, res, next) => {
   catch (err) {
     if (err.code === '23505') {
       let duplicateField;
-      if (err.detail.search('phone_id')) duplicateField = 'phoneId'
-      else if (err.detail.search('username')) duplicateField = 'username'
-      else if (err.detail.search('email')) duplicateField = 'email'
+      if (err.detail.includes('phone_id')) duplicateField = 'phoneId'
+      else if (err.detail.includes('username')) duplicateField = 'username'
+      else if (err.detail.includes('email')) duplicateField = 'email'
 
       const error = new Error(`${duplicateField} is already taken and must be unique.`)
       error.status = 400
@@ -45,6 +48,7 @@ userRouter.post('/register', async (req, res, next) => {
 })
 
 
+
 // Login an existing user by username or phoneId
 userRouter.post('/login', async (req, res, next) => {
   try {
@@ -52,12 +56,12 @@ userRouter.post('/login', async (req, res, next) => {
     let userData;
     if (username) {
       userData = await knex
-        .select('username', 'password_hash', 'phone_id')
+        .select('id', 'username', 'password_hash', 'phone_id')
         .from('users')
         .where({ username })
     } else if (phoneId) {
       userData = await knex
-      .select('username', 'password_hash', 'phone_id')
+      .select('id', 'username', 'password_hash', 'phone_id')
       .from('users')
       .where({ phone_id: phoneId })
     }
@@ -66,20 +70,29 @@ userRouter.post('/login', async (req, res, next) => {
       const error = new Error('Username or phoneId is not unique! Multiple users were returned. Yikes!')
       error.status = 500
       return next(error)
+    } else {
+      userData = userData[0]
     }
 
-    const validPassword = await validatePassword(password, userData[0].password_hash)
+    const validPassword = await validatePassword(password, userData.password_hash)
     if (!validPassword) {
       const error = new Error('Password is not valid.')
       error.status = 400
       return next(error)
     }
-    //CREATE JSON WEB TOKEN
-    return res.json(userData)
+    delete userData.password_hash
+    const webToken = await createToken(userData)
+    return res.json({webToken})
   } catch (err) {
-
+    return next(err)
   }
-  return res.json({message: 'In the user router /get handler'})
+})
+
+
+userRouter.put('/', validateTokenMiddleware, (req, res, next) => {
+  const { userId, username, phone_id } = req.jwtPayload
+  //search by userId and then make updates from there
+  return res.json({payload: req.jwtPayload})
 })
 
 module.exports = {
