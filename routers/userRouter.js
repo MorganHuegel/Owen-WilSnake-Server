@@ -1,7 +1,7 @@
 const express = require('express')
 const userRouter = express.Router()
 const { knex } = require('../database/connectToDb')
-const { hashPassword } = require('../authentication/bcrypt')
+const { hashPassword, validatePassword } = require('../authentication/bcrypt')
 
 /* DELETE THIS BEFORE PRODUCTION !!!!!!!!!!!!!!!! */
 userRouter.get('/', async (req, res, next) => {
@@ -11,7 +11,7 @@ userRouter.get('/', async (req, res, next) => {
 /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
 
-// REGISTER NEW USER
+// Register new user
 userRouter.post('/register', async (req, res, next) => {
   try {
     const { username, password, phoneId, email } = req.body
@@ -45,9 +45,37 @@ userRouter.post('/register', async (req, res, next) => {
 })
 
 
-userRouter.get('/login', async (req, res, next) => {
+// Login an existing user by username or phoneId
+userRouter.post('/login', async (req, res, next) => {
   try {
+    const { username, password, phoneId } = req.body
+    let userData;
+    if (username) {
+      userData = await knex
+        .select('username', 'password_hash', 'phone_id')
+        .from('users')
+        .where({ username })
+    } else if (phoneId) {
+      userData = await knex
+      .select('username', 'password_hash', 'phone_id')
+      .from('users')
+      .where({ phone_id: phoneId })
+    }
 
+    if (userData.length > 1) {
+      const error = new Error('Username or phoneId is not unique! Multiple users were returned. Yikes!')
+      error.status = 500
+      return next(error)
+    }
+
+    const validPassword = await validatePassword(password, userData[0].password_hash)
+    if (!validPassword) {
+      const error = new Error('Password is not valid.')
+      error.status = 400
+      return next(error)
+    }
+    //CREATE JSON WEB TOKEN
+    return res.json(userData)
   } catch (err) {
 
   }
