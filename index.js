@@ -7,15 +7,15 @@ const { userRouter } = require('./routers/userRouter')
 const { gameRouter } = require('./routers/gameRouter')
 
 
-app.use('/user', userRouter)
-app.use('/game', gameRouter)
+app.use('/users', userRouter)
+app.use('/games', gameRouter)
 
 
 //All errors will be handled here at the end of the pipeline
 app.use((err, req, res, next) => {
   if (err) {
     console.error('ERROR: ', err.message)
-    return res.status(err.status).json({error: err.message})
+    return res.status(err.status || 500).json({error: err.message})
   } else {
     return res.status(500).json({error: 'Something went wrong :('})
   }

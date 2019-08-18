@@ -14,7 +14,7 @@ CREATE TABLE users(
   username VARCHAR NOT NULL UNIQUE,
   password_hash VARCHAR NOT NULL,
   email VARCHAR UNIQUE,
-  created_ts TIMESTAMPTZ default current_timestamp,
+  created_ts TIMESTAMPTZ default NOW(),
   last_updated_ts TIMESTAMPTZ
 );
 
@@ -22,7 +22,7 @@ CREATE TABLE games(
   id serial PRIMARY KEY,
   score int NOT NULL,
   num_of_touches int NOT NULL,
-  played_on_ts TIMESTAMPTZ,
+  played_on_ts TIMESTAMPTZ default NOW(),
   user_id int REFERENCES users(id)
 );
 
