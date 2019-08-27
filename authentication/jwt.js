@@ -31,7 +31,6 @@ async function validateTokenMiddleware (req, res, next) {
     const token = req.headers.authorization
     const decoded = await verifyToken(token)
     req.jwtPayload = decoded
-    console.log('DECODED:', decoded)
     next()
   } 
   catch (err) {

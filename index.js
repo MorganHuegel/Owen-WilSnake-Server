@@ -14,8 +14,9 @@ app.use('/games', gameRouter)
 //All errors will be handled here at the end of the pipeline
 app.use((err, req, res, next) => {
   if (err) {
+    if (err.code === 'ECONNREFUSED') err.message = 'Database connection refused. Try again.'
     // Means its a custom error from up the pipeline
-    console.error('ERROR: ', err.message)
+    console.error('ERROR: ', err)
     return res.status(err.status || 500).json({error: err.message})
   } else {
     // Means its an unhandled error

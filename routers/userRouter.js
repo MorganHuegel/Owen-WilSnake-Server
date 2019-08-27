@@ -12,6 +12,37 @@ userRouter.get('/', async (req, res, next) => {
 /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
 
+userRouter.get('/jwt', validateTokenMiddleware, async (req, res, next) => {
+  const { id, username, phone_id } = req.jwtPayload
+  try {
+    const userData = await knex
+      .select()
+      .from('users')
+      .where({ id })
+    
+    if (userData.length !== 1) {
+      const err = new Error('User no longer exists')
+      err.status = 400
+      return next(err)
+    }
+    
+    const user = userData[0]
+    if (user.username !== username) {
+      const err = new Error('Why doesnt the username in database match the jwt??')
+      err.status = 400
+      return next(err)
+    } else if (user.phone_id !== phone_id) {
+      const err = new Error('Why doesnt the phone_id in database match the jwt??')
+      err.status = 400
+      return next(err)
+    }
+
+    return res.json({valid: true}).status(200)
+  } catch (e) {
+    return next(e)
+  }
+})
+
 
 
 // Register new user
@@ -90,8 +121,9 @@ userRouter.post('/login', async (req, res, next) => {
 
 
 userRouter.put('/', validateTokenMiddleware, (req, res, next) => {
-  const { userId, username, phone_id } = req.jwtPayload
+  const { id, username, phone_id } = req.jwtPayload
   //search by userId and then make updates from there
+  //remember to change last_updated_ts field on the user
   return res.json({payload: req.jwtPayload})
 })
 
