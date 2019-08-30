@@ -100,17 +100,38 @@ gameRouter.post('/', validateTokenMiddleware, async (req, res, next) => {
     const newGameId = newGameSaved[0]
 
     const currentDate = new Date()
-    const todayTimestamp = `${currentDate.getUTCFullYear()}-${currentDate.getUTCMonth()}-${currentDate.getUTCDate()}`
+    const yesterdayDate = new Date()
+    console.log('frst date:',yesterdayDate.getUTCDate())
+    yesterdayDate.setUTCDate(currentDate.getUTCDate() - 1)
+    console.log('second date: ', yesterdayDate.getUTCDate())
+
+
+    const currentYear = "" + yesterdayDate.getUTCFullYear()
+    const currentMonth = "" + (yesterdayDate.getUTCMonth() + 1)
+    const currentDay = "" + yesterdayDate.getUTCDate()
+    const currentHour = "" + yesterdayDate.getUTCHours()
+    const currentMinute = "" + yesterdayDate.getUTCMinutes()
+    const currentSeconds = "" + yesterdayDate.getUTCSeconds()
+
+    const yesterdayTimestamp = `${currentYear}-` +
+      `${currentMonth.length === 2 ? currentMonth : '0' + currentMonth}-` +
+      `${currentDay.length === 2 ? currentDay : '0' + currentDay}T` +
+      `${currentHour.length === 2 ? currentHour : '0' + currentHour}:` +
+      `${currentMinute.length === 2 ? currentMinute : '0' + currentMinute}:` +
+      `${currentSeconds.length === 2 ? currentSeconds : '0' + currentSeconds}Z`
+    console.log('TODAY: ', yesterdayTimestamp)
 
     const topScoresToday = await knex
       .select('users.username', 'games.user_id', 'games.id', 'games.score', 'games.num_of_touches', 'games.played_on_ts')
       .from('games')
       .innerJoin('users', 'games.user_id', 'users.id')
-      .orderBy([{column: 'score', order: 'desc'}, {column: 'num_of_touches', order: 'desc'}])
-      .where('played_on_ts', '>=', todayTimestamp)
+      .where('played_on_ts', '>=', yesterdayTimestamp)
       .andWhere('score', '>=', score)
-    
-    const topThreeScoresToday = topScoresToday.slice(0, 3)
+      .orderBy([{column: 'score', order: 'desc'}, {column: 'num_of_touches', order: 'desc'}])
+
+    console.log('TOP SCORES TODAY', topScoresToday)
+
+    const topThreeScoresToday = topScoresToday.length > 3 ? topScoresToday.slice(0, 3) : topScoresToday
     const userRank = topScoresToday.findIndex(game => game.id === newGameId)
     const inTopThree = (userRank <= 2) && (userRank >= 0)
 
