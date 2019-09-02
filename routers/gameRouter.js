@@ -101,10 +101,7 @@ gameRouter.post('/', validateTokenMiddleware, async (req, res, next) => {
 
     const currentDate = new Date()
     const yesterdayDate = new Date()
-    console.log('frst date:',yesterdayDate.getUTCDate())
     yesterdayDate.setUTCDate(currentDate.getUTCDate() - 1)
-    console.log('second date: ', yesterdayDate.getUTCDate())
-
 
     const currentYear = "" + yesterdayDate.getUTCFullYear()
     const currentMonth = "" + (yesterdayDate.getUTCMonth() + 1)
@@ -119,27 +116,23 @@ gameRouter.post('/', validateTokenMiddleware, async (req, res, next) => {
       `${currentHour.length === 2 ? currentHour : '0' + currentHour}:` +
       `${currentMinute.length === 2 ? currentMinute : '0' + currentMinute}:` +
       `${currentSeconds.length === 2 ? currentSeconds : '0' + currentSeconds}Z`
-    console.log('TODAY: ', yesterdayTimestamp)
 
     const topScoresToday = await knex
       .select('users.username', 'games.user_id', 'games.id', 'games.score', 'games.num_of_touches', 'games.played_on_ts')
       .from('games')
       .innerJoin('users', 'games.user_id', 'users.id')
       .where('played_on_ts', '>=', yesterdayTimestamp)
-      .andWhere('score', '>=', score)
-      .orderBy([{column: 'score', order: 'desc'}, {column: 'num_of_touches', order: 'desc'}])
+      .orderBy([{column: 'score', order: 'desc'}, {column: 'num_of_touches', order: 'desc'}, {column: 'played_on_ts', order: 'asc'}])
 
-    console.log('TOP SCORES TODAY', topScoresToday)
-
-    const topThreeScoresToday = topScoresToday.length > 3 ? topScoresToday.slice(0, 3) : topScoresToday
-    const userRank = topScoresToday.findIndex(game => game.id === newGameId)
-    const inTopThree = (userRank <= 2) && (userRank >= 0)
+    const topFiveScoresToday = topScoresToday.slice(0, 5)
+    const userIndexRank = topScoresToday.findIndex(game => game.id === newGameId)
+    const inTopFive = (userIndexRank <= 4) && (userIndexRank >= 0)
 
     return res.json({
-      topThreeScoresToday,
-      userRank,
-      userScore: topScoresToday[userRank],
-      inTopThree
+      topFiveScoresToday,
+      userIndexRank,
+      userScore: topScoresToday[userIndexRank],
+      inTopFive
     })
   } 
   catch (err) {
