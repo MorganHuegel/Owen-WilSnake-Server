@@ -6,16 +6,17 @@ const { createToken, validateTokenMiddleware } = require('../authentication/jwt'
 
 /* DELETE THIS BEFORE PRODUCTION !!!!!!!!!!!!!!!! */
 userRouter.get('/', async (req, res, next) => {
-  const allUsers = await knex.select().from('users')
+  const allUsers = await knex('users').select().from('users')
   return res.status(418).json({ allUsers })
 })
 /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
 
+// Get user data from jwt
 userRouter.get('/jwt', validateTokenMiddleware, async (req, res, next) => {
   const { id, username, phone_id } = req.jwtPayload
   try {
-    const userData = await knex
+    const userData = await knex('users')
       .select()
       .from('users')
       .where({ id })
@@ -50,7 +51,7 @@ userRouter.post('/register', async (req, res, next) => {
   try {
     const { username, password, phoneId, email } = req.body
     const hashedPassword = await hashPassword(password)
-    const userId = await knex
+    const userId = await knex('users')
       .insert({
         username, 
         password_hash: hashedPassword, 
@@ -79,6 +80,26 @@ userRouter.post('/register', async (req, res, next) => {
 })
 
 
+// Check if a PhoneId already exists
+userRouter.post('/check', async(req, res, next) => {
+  try {
+    const phoneId = req.body.phoneId
+    const userData = await knex('users')
+      .select('username')
+      .from('users')
+      .where({phone_id: phoneId})
+
+    if (userData.length === 1) {
+      return res.json({userExists: true, username: userData[0].username})
+    } else {
+      return res.json({userExists: false})
+    }
+  }
+  catch (err) {
+    next(err)
+  }
+})
+
 
 // Login an existing user by username or phoneId
 userRouter.post('/login', async (req, res, next) => {
@@ -86,12 +107,12 @@ userRouter.post('/login', async (req, res, next) => {
     const { username, password, phoneId } = req.body
     let userData;
     if (username) {
-      userData = await knex
+      userData = await knex('users')
         .select('id', 'username', 'password_hash', 'phone_id')
         .from('users')
         .where({ username })
     } else if (phoneId) {
-      userData = await knex
+      userData = await knex('users')
       .select('id', 'username', 'password_hash', 'phone_id')
       .from('users')
       .where({ phone_id: phoneId })
@@ -101,13 +122,17 @@ userRouter.post('/login', async (req, res, next) => {
       const error = new Error('Username or phoneId is not unique! Multiple users were returned. Yikes!')
       error.status = 500
       return next(error)
+    } else if (userData.length === 0) {
+      const error = new Error('User no longer exists.')
+      error.status = 400
+      return next(error)
     } else {
       userData = userData[0]
     }
 
     const validPassword = await validatePassword(password, userData.password_hash)
     if (!validPassword) {
-      const error = new Error('Password is not valid.')
+      const error = new Error('Password does not match.')
       error.status = 400
       return next(error)
     }
