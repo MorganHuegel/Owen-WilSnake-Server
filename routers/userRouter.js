@@ -5,10 +5,10 @@ const { hashPassword, validatePassword } = require('../authentication/bcrypt')
 const { createToken, validateTokenMiddleware } = require('../authentication/jwt')
 
 /* DELETE THIS BEFORE PRODUCTION !!!!!!!!!!!!!!!! */
-userRouter.get('/', async (req, res, next) => {
-  const allUsers = await knex('users').select().from('users')
-  return res.status(418).json({ allUsers })
-})
+// userRouter.get('/', async (req, res, next) => {
+//   const allUsers = await knex('users').select().from('users')
+//   return res.status(418).json({ allUsers })
+// })
 /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
 
