@@ -4,6 +4,7 @@ const cors = require('cors')
 
 app.use(cors())
 app.use((req, res, next) => {
+  console.log('---------------------------After Cors Middleware---------------------------')
   console.log(req.headers)
   next()
 })
