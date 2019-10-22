@@ -107,11 +107,13 @@ userRouter.post('/login', async (req, res, next) => {
     const { username, password, phoneId } = req.body
     let userData;
     if (username) {
+      console.log('Searching by username---------', username)
       userData = await knex('users')
         .select('id', 'username', 'password_hash', 'phone_id')
         .from('users')
         .where({ username })
     } else if (phoneId) {
+      console.log('Searching by phoneID---------', phoneId)
       userData = await knex('users')
       .select('id', 'username', 'password_hash', 'phone_id')
       .from('users')
@@ -123,6 +125,7 @@ userRouter.post('/login', async (req, res, next) => {
       error.status = 500
       return next(error)
     } else if (userData.length === 0) {
+      console.log('HERE: ', userData.length)
       const error = new Error('User no longer exists.')
       error.status = 400
       return next(error)

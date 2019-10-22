@@ -14,6 +14,7 @@ CREATE TABLE users(
   username VARCHAR NOT NULL UNIQUE,
   password_hash VARCHAR NOT NULL,
   email VARCHAR UNIQUE,
+  avatar VARCHAR default 'charkie',
   created_ts TIMESTAMPTZ default NOW(),
   last_updated_ts TIMESTAMPTZ default NOW()
 );
@@ -33,7 +34,7 @@ VALUES
 
 INSERT INTO games (score, num_of_touches, played_on_ts, user_id)
 VALUES 
-  (1234, 13, '2019-07-01 05:55:55-07', 1),
-  (2345, 29, '2019-07-02 05:55:55-07', 1),
-  (4443, 44, '2019-07-03 05:55:55-07', 1),
-  (3000, 10, '2019-07-04 05:55:55-07', 2);
+  (1234, 13, '2019-10-21 05:55:55-07', 1),
+  (2345, 29, '2019-10-21 05:55:55-07', 1),
+  (4443, 44, '2019-10-20 05:55:55-07', 1),
+  (3000, 10, '2019-10-20 05:55:55-07', 2);
