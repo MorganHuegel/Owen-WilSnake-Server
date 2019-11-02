@@ -17,7 +17,7 @@ userRouter.get('/jwt', validateTokenMiddleware, async (req, res, next) => {
   const { id, username, phone_id } = req.jwtPayload
   try {
     const userData = await knex('users')
-      .select('id', 'username', 'phone_id')
+      .select('id', 'username', 'phone_id', 'avatar')
       .from('users')
       .where({ id })
     
@@ -38,7 +38,7 @@ userRouter.get('/jwt', validateTokenMiddleware, async (req, res, next) => {
       return next(err)
     }
 
-    return res.json({valid: true}).status(200)
+    return res.json({valid: true, user}).status(200)
   } catch (e) {
     return next(e)
   }
