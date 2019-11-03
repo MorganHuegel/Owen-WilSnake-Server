@@ -149,7 +149,7 @@ userRouter.put('/avatar', validateTokenMiddleware, async (req, res, next) => {
   try {
     const { id, username, phone_id } = req.jwtPayload;
     const { avatar } = req.body;
-    if (!['charkie', 'daniel', 'owen', 'betsy', 'neil', 'dutch', 'gabe'].includes(avatar)) {
+    if (!['charkie', 'daniel', 'owenWilson', 'betsy', 'neil', 'dutch', 'gabe'].includes(avatar)) {
       const err = new Error('Avatar name ' + avatar  + ' does not exist.')
       err.status = 400
       return next(err)
