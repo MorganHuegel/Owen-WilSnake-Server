@@ -17,7 +17,7 @@ userRouter.get('/jwt', validateTokenMiddleware, async (req, res, next) => {
   const { id, username, phone_id } = req.jwtPayload
   try {
     const userData = await knex('users')
-      .select()
+      .select('id', 'username', 'phone_id', 'avatar')
       .from('users')
       .where({ id })
     
@@ -38,7 +38,7 @@ userRouter.get('/jwt', validateTokenMiddleware, async (req, res, next) => {
       return next(err)
     }
 
-    return res.json({valid: true}).status(200)
+    return res.json({valid: true, user}).status(200)
   } catch (e) {
     return next(e)
   }
@@ -85,12 +85,12 @@ userRouter.post('/check', async(req, res, next) => {
   try {
     const phoneId = req.body.phoneId
     const userData = await knex('users')
-      .select('username')
+      .select('username', 'avatar')
       .from('users')
       .where({phone_id: phoneId})
 
     if (userData.length === 1) {
-      return res.json({userExists: true, username: userData[0].username})
+      return res.json({userExists: true, username: userData[0].username, avatar: userData[0].avatar})
     } else {
       return res.json({userExists: false})
     }
@@ -108,14 +108,14 @@ userRouter.post('/login', async (req, res, next) => {
     let userData;
     if (username) {
       userData = await knex('users')
-        .select('id', 'username', 'password_hash', 'phone_id')
+        .select('id', 'username', 'password_hash', 'phone_id', 'avatar')
         .from('users')
         .where({ username })
     } else if (phoneId) {
       userData = await knex('users')
-      .select('id', 'username', 'password_hash', 'phone_id')
-      .from('users')
-      .where({ phone_id: phoneId })
+        .select('id', 'username', 'password_hash', 'phone_id', 'avatar')
+        .from('users')
+        .where({ phone_id: phoneId })
     }
 
     if (userData.length > 1) {
@@ -138,18 +138,39 @@ userRouter.post('/login', async (req, res, next) => {
     }
     delete userData.password_hash
     const webToken = await createToken(userData)
-    return res.json({webToken})
+    return res.json({webToken, userData})
   } catch (err) {
     return next(err)
   }
 })
 
 
-userRouter.put('/', validateTokenMiddleware, (req, res, next) => {
-  const { id, username, phone_id } = req.jwtPayload
-  //search by userId and then make updates from there
-  //remember to change last_updated_ts field on the user
-  return res.json({payload: req.jwtPayload})
+userRouter.put('/avatar', validateTokenMiddleware, async (req, res, next) => {
+  try {
+    const { id, username, phone_id } = req.jwtPayload;
+    const { avatar } = req.body;
+    if (!['charkie', 'daniel', 'owenWilson', 'betsy', 'neil', 'dutch', 'gabe'].includes(avatar)) {
+      const err = new Error('Avatar name ' + avatar  + ' does not exist.')
+      err.status = 400
+      return next(err)
+    }
+
+    const currDate = new Date
+    const currTimestamp = '' + 
+      ( currDate.getUTCFullYear() ) + '-' +
+      ( currDate.getUTCMonth() < 9 ? ('0' + (currDate.getUTCMonth() + 1) ) : currDate.getUTCMonth() + 1 ) + '-' +
+      ( currDate.getUTCDate() < 10 ? '0' + currDate.getUTCDate() : currDate.getUTCDate() ) + 'T' +
+      ( currDate.getUTCHours() < 10 ? '0' + currDate.getUTCHours() : currDate.getUTCHours() ) + ':' +
+      ( currDate.getUTCMinutes() < 10 ? '0' + currDate.getUTCMinutes() : currDate.getUTCMinutes() ) + ':' +
+      ( currDate.getUTCSeconds() < 10 ? '0' + currDate.getUTCSeconds() : currDate.getUTCSeconds() ) + 'Z'
+
+    const updatedUser = await knex('users')
+      .where({ id })
+      .update({ avatar, last_updated_ts: currTimestamp }, ['id', 'username', 'phone_id', 'avatar'])
+    return res.json({ updatedUser: updatedUser[0] })
+  } catch (e) {
+    return next(e);
+  }
 })
 
 module.exports = {
