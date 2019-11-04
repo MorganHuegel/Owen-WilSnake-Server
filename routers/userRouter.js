@@ -85,12 +85,12 @@ userRouter.post('/check', async(req, res, next) => {
   try {
     const phoneId = req.body.phoneId
     const userData = await knex('users')
-      .select('username')
+      .select('username', 'avatar')
       .from('users')
       .where({phone_id: phoneId})
 
     if (userData.length === 1) {
-      return res.json({userExists: true, username: userData[0].username})
+      return res.json({userExists: true, username: userData[0].username, avatar: userData[0].avatar})
     } else {
       return res.json({userExists: false})
     }
