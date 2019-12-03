@@ -14,10 +14,10 @@ const { createToken, validateTokenMiddleware } = require('../authentication/jwt'
 
 // Get user data from jwt
 userRouter.get('/jwt', validateTokenMiddleware, async (req, res, next) => {
-  const { id, username, phone_id } = req.jwtPayload
+  const { id, username /*, phone_id*/} = req.jwtPayload
   try {
     const userData = await knex('users')
-      .select('id', 'username', 'phone_id', 'avatar')
+      .select('id', 'username', /*'phone_id',*/ 'avatar')
       .from('users')
       .where({ id })
     
@@ -32,11 +32,11 @@ userRouter.get('/jwt', validateTokenMiddleware, async (req, res, next) => {
       const err = new Error('Why doesnt the username in database match the jwt??')
       err.status = 400
       return next(err)
-    } else if (user.phone_id !== phone_id) {
+    } /*else if (user.phone_id !== phone_id) {
       const err = new Error('Why doesnt the phone_id in database match the jwt??')
       err.status = 400
       return next(err)
-    }
+    }*/
 
     return res.json({valid: true, user}).status(200)
   } catch (e) {
@@ -49,13 +49,13 @@ userRouter.get('/jwt', validateTokenMiddleware, async (req, res, next) => {
 // Register new user
 userRouter.post('/register', async (req, res, next) => {
   try {
-    const { username, password, phoneId, email } = req.body
+    const { username, password, /*phoneId,*/ email } = req.body
     const hashedPassword = await hashPassword(password)
     const userId = await knex('users')
       .insert({
         username, 
         password_hash: hashedPassword, 
-        phone_id: phoneId, 
+        //phone_id: phoneId, 
         email
       })
       .into('users')
@@ -66,8 +66,8 @@ userRouter.post('/register', async (req, res, next) => {
   catch (err) {
     if (err.code === '23505') {
       let duplicateField;
-      if (err.detail.includes('phone_id')) duplicateField = 'phoneId'
-      else if (err.detail.includes('username')) duplicateField = 'username'
+      if /*(err.detail.includes('phone_id')) duplicateField = 'phoneId'
+      else if*/ (err.detail.includes('username')) duplicateField = 'username'
       else if (err.detail.includes('email')) duplicateField = 'email'
 
       const error = new Error(`${duplicateField} is already taken and must be unique.`)
@@ -81,41 +81,46 @@ userRouter.post('/register', async (req, res, next) => {
 
 
 // Check if a PhoneId already exists
-userRouter.post('/check', async(req, res, next) => {
-  try {
-    const phoneId = req.body.phoneId
-    const userData = await knex('users')
-      .select('username', 'avatar')
-      .from('users')
-      .where({phone_id: phoneId})
+// userRouter.post('/check', async(req, res, next) => {
+//   try {
+//     const phoneId = req.body.phoneId
+//     const userData = await knex('users')
+//       .select('username', 'avatar')
+//       .from('users')
+//       .where({phone_id: phoneId})
 
-    if (userData.length === 1) {
-      return res.json({userExists: true, username: userData[0].username, avatar: userData[0].avatar})
-    } else {
-      return res.json({userExists: false})
-    }
-  }
-  catch (err) {
-    next(err)
-  }
-})
+//     if (userData.length === 1) {
+//       return res.json({userExists: true, username: userData[0].username, avatar: userData[0].avatar})
+//     } else {
+//       return res.json({userExists: false})
+//     }
+//   }
+//   catch (err) {
+//     next(err)
+//   }
+// })
 
 
 // Login an existing user by username or phoneId
 userRouter.post('/login', async (req, res, next) => {
   try {
-    const { username, password, phoneId } = req.body
+    const { username, password /*, phoneId*/ } = req.body
     let userData;
     if (username) {
       userData = await knex('users')
-        .select('id', 'username', 'password_hash', 'phone_id', 'avatar')
+        .select('id', 'username', 'password_hash', /*'phone_id',*/ 'avatar')
         .from('users')
         .where({ username })
-    } else if (phoneId) {
+    } /*else if (phoneId) {
       userData = await knex('users')
         .select('id', 'username', 'password_hash', 'phone_id', 'avatar')
         .from('users')
         .where({ phone_id: phoneId })
+    }*/
+    else {
+      const error = new Error('Must provide a username, ya dummy!')
+      error.status = 400
+      return next(error)
     }
 
     if (userData.length > 1) {
@@ -123,7 +128,7 @@ userRouter.post('/login', async (req, res, next) => {
       error.status = 500
       return next(error)
     } else if (userData.length === 0) {
-      const error = new Error('User no longer exists.')
+      const error = new Error(`Username ${username} does not exist.`)
       error.status = 400
       return next(error)
     } else {
@@ -147,7 +152,7 @@ userRouter.post('/login', async (req, res, next) => {
 
 userRouter.put('/avatar', validateTokenMiddleware, async (req, res, next) => {
   try {
-    const { id, username, phone_id } = req.jwtPayload;
+    const { id, username /*, phone_id*/ } = req.jwtPayload;
     const { avatar } = req.body;
     if (!['charkie', 'daniel', 'owenWilson', 'betsy', 'neil', 'dutch', 'gabe'].includes(avatar)) {
       const err = new Error('Avatar name ' + avatar  + ' does not exist.')
@@ -166,7 +171,7 @@ userRouter.put('/avatar', validateTokenMiddleware, async (req, res, next) => {
 
     const updatedUser = await knex('users')
       .where({ id })
-      .update({ avatar, last_updated_ts: currTimestamp }, ['id', 'username', 'phone_id', 'avatar'])
+      .update({ avatar, last_updated_ts: currTimestamp }, ['id', 'username', /*'phone_id',*/ 'avatar'])
     return res.json({ updatedUser: updatedUser[0] })
   } catch (e) {
     return next(e);

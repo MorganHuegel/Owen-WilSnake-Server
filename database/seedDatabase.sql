@@ -10,7 +10,7 @@ DROP TABLE IF EXISTS users;
 
 CREATE TABLE users(
   id serial PRIMARY KEY,
-  phone_id VARCHAR NOT NULL UNIQUE,
+  --phone_id VARCHAR NOT NULL UNIQUE,
   username VARCHAR NOT NULL UNIQUE,
   password_hash VARCHAR NOT NULL,
   email VARCHAR UNIQUE,
@@ -27,10 +27,10 @@ CREATE TABLE games(
   user_id int REFERENCES users(id)
 );
 
-INSERT INTO users (phone_id, username, password_hash, email, created_ts, last_updated_ts)
+INSERT INTO users (/*phone_id,*/ username, password_hash, email, created_ts, last_updated_ts)
 VALUES 
-  ('iphone1234', 'bobuser', '$2a$08$lOz6rbxEPlWYQLmSt6Seh.GeXDNgWMqCBh8AddsQniLrfmAeSJLYS', 'bob@user.com', '2019-06-18 04:10:25-07', '2019-07-18 09:10:25-07'),
-  ('android4321', 'billuser', '$2a$08$lOz6rbxEPlWYQLmSt6Seh.GeXDNgWMqCBh8AddsQniLrfmAeSJLYS', 'bill@user.com', '2019-06-11 04:10:25-07', '2019-07-18 09:10:25-07');
+  (/*'iphone1234',*/ 'bobuser', '$2a$08$lOz6rbxEPlWYQLmSt6Seh.GeXDNgWMqCBh8AddsQniLrfmAeSJLYS', 'bob@user.com', '2019-06-18 04:10:25-07', '2019-07-18 09:10:25-07'),
+  (/*'android4321',*/ 'billuser', '$2a$08$lOz6rbxEPlWYQLmSt6Seh.GeXDNgWMqCBh8AddsQniLrfmAeSJLYS', 'bill@user.com', '2019-06-11 04:10:25-07', '2019-07-18 09:10:25-07');
 
 INSERT INTO games (score, num_of_touches, played_on_ts, user_id)
 VALUES 
