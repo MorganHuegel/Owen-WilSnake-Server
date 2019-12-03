@@ -61,7 +61,7 @@ userRouter.post('/register', async (req, res, next) => {
       .into('users')
       .returning('id')
 
-    return res.status(201).json({userId})
+    return res.status(201).json({userId: userId[0]})
   } 
   catch (err) {
     if (err.code === '23505') {
