@@ -1,6 +1,6 @@
 <p align="center">
-   <img src="https://github.com/MorganHuegel/Owen-WilSnake/blob/master/src/components/landing-page/logo/logoWords.png" width=60%>
-   <img src="https://github.com/MorganHuegel/Owen-WilSnake/blob/master/src/components/landing-page/logo/owen-face-with-border-small.png" width=20% >
+   <img src="https://github.com/MorganHuegel/YouSnake/blob/master/images/owen-wilson/owen-logo-words.png" width=60%>
+   <img src="https://github.com/MorganHuegel/YouSnake/blob/master/images/owen-wilson/owen-face-with-border.png" width=20% >
    <span><i>Wowww!</i></span>
 </p>
 
@@ -11,7 +11,7 @@
 This repo is a Node API for a React Native game.
 
 
-Owen Wilsnake is a rendition of the classic game, *Snake*, with a fun twist!
+YouSnake is a rendition of the classic game, *Snake*, with a fun twist!
 
 
 
