@@ -5,10 +5,10 @@ const { knex } = require("../database/connectToDb");
 const { validateTokenMiddleware } = require("../authentication/jwt");
 
 /* DELETE THIS BEFORE PRODUCTION !!!!!!!!!!!!!!!! */
-// gameRouter.get('/', async (req, res, next) => {
-//   const allGames = await knex.select().from('games')
-//   return res.status(418).json({ allGames })
-// })
+gameRouter.get("/", async (req, res, next) => {
+  const allGames = await knex.select().from("games");
+  return res.status(418).json({ allGames });
+});
 /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
 // GET ALL GAMES FOR SINGLE USER
